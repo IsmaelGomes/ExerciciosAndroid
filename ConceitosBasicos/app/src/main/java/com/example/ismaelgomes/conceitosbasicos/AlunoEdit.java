@@ -60,8 +60,8 @@ public class AlunoEdit extends AppCompatActivity {
 
     private void setViewValues(Aluno aluno){
         if(aluno != null){
-            if(aluno.getFoto() != null)
-                alunoimage.setImageBitmap(aluno.getFoto());
+            if(aluno.getSerializableFoto() != null)
+                alunoimage.setImageBitmap(BitmapUtility.getImage(aluno.getSerializableFoto()));
             name.setText(aluno.getNome());
             phone.setText(aluno.getTelefone());
             nota.setText(aluno.getNota().toString());
@@ -122,7 +122,7 @@ public class AlunoEdit extends AppCompatActivity {
         cv.put("Nome", a.getNome());
         cv.put("Telefone", a.getTelefone());
         cv.put("Endereco", a.getEndereco());
-        //cv.put("Foto", a.getFoto()); RESOLVER PROBLEMA COM SERIALIZAÇÃO
+        cv.put("Foto", a.getSerializableFoto());
         cv.put("Site", a.getSite());
         cv.put("Nota", a.getNota());
         return cv;
@@ -131,8 +131,7 @@ public class AlunoEdit extends AppCompatActivity {
     private Aluno getAlunoFromViews(){
 
         Aluno a = new Aluno();
-        //PROBLEMA COM SERIALIZAÇÃO DO BITMAP.
-        //a.setFoto(((BitmapDrawable)alunoimage.getDrawable()).getBitmap());
+        a.setSerializableFoto(BitmapUtility.getBytes(((BitmapDrawable)alunoimage.getDrawable()).getBitmap()));
         if(aluno != null)
             a.setId(aluno.getId());
         a.setNome(name.getText().toString());

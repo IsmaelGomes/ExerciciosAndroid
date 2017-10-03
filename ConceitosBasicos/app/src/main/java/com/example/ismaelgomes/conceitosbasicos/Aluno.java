@@ -12,22 +12,28 @@ public class Aluno implements Serializable{
     private String nome;
     private String telefone;
     private String endereco;
-    private Bitmap foto;
     private String site;
     private Double nota;
+    private byte[] serializableFoto;
 
     public Aluno(){
 
     }
 
-    public Aluno(String nome, String tel, String end, Bitmap foto, String site, Double nota){
+    public Aluno(String nome, String tel, String end, byte[] foto, String site, Double nota){
         this.setNome(nome);
         this.setTelefone(tel);
         this.setEndereco(end);
-        this.setFoto(foto);
+        this.setSerializableFoto(foto);
         this.setSite(site);
         this.setNota(nota);
     }
+
+    public byte[] getSerializableFoto(){
+        return serializableFoto;
+    }
+
+    public void setSerializableFoto(byte[] serializableFoto){ this.serializableFoto = serializableFoto; }
 
     public int getId(){ return  id;}
 
@@ -55,14 +61,6 @@ public class Aluno implements Serializable{
 
     public void setEndereco(String endereco) {
         this.endereco = endereco;
-    }
-
-    public Bitmap getFoto() {
-        return foto;
-    }
-
-    public void setFoto(Bitmap foto) {
-        this.foto = foto;
     }
 
     public String getSite() {

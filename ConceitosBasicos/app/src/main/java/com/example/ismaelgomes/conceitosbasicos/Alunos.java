@@ -78,7 +78,10 @@ import java.util.List;
                 a.setNome(cursor.getString(1));
                 a.setTelefone(cursor.getString(2));
                 a.setEndereco(cursor.getString(3));
-                //a.setFoto(cursor.getBlob(4)); CONVERTER PARA BITMAP.
+
+                if(cursor.getBlob(4) != null)
+                    a.setSerializableFoto(cursor.getBlob(4));
+
                 a.setSite(cursor.getString(5));
                 a.setNota(cursor.getDouble(6));
                 all.add(a);

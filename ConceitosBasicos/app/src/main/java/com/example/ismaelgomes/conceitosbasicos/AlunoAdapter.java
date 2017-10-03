@@ -48,7 +48,8 @@ public class AlunoAdapter extends BaseAdapter{
             holder = (ViewHolder)convertView.getTag();
         }
 
-        holder.imgLogo.setImageBitmap(aluno.getFoto());
+        if(aluno.getSerializableFoto() != null)
+            holder.imgLogo.setImageBitmap(BitmapUtility.getImage(aluno.getSerializableFoto()));
         holder.txtNome.setText(aluno.getNome());
         holder.txtSite.setText(aluno.getSite());
 
