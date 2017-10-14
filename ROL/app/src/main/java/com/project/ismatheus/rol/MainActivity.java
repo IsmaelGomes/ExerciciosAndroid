@@ -1,6 +1,7 @@
 package com.project.ismatheus.rol;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -28,15 +29,21 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private Button mNewAccountButton;
     private ImageView mRolStaticLogoImageView;
 
-    private boolean ANIMATION_ENDED = false;
+    private Boolean ANIMATION_ENDED = false;
+    private Boolean START_ANIMATION = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(savedInstanceState != null){
+            START_ANIMATION = savedInstanceState.getBoolean("START_ANIMATION");
+        }
+
         mRolLogoImageView = (ImageView)findViewById(R.id.rolLogoImageView);
-        mRolCoverImageView = (ImageView)findViewById(R.id.rolCoverImageView);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            mRolCoverImageView = (ImageView)findViewById(R.id.rolCoverImageView);
         mEmailEditText = (EditText)findViewById(R.id.emailEditText);
         mPswEditText = (EditText)findViewById(R.id.pswEditText);
         mLangTextView = (TextView)findViewById(R.id.langTextView);
@@ -45,34 +52,41 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         mNewAccountButton = (Button)findViewById(R.id.newAccountButton);
         mRolStaticLogoImageView = (ImageView)findViewById(R.id.rolLogoStaticImageView);
 
-        mRolCoverImageView.setVisibility(View.GONE);
-        mEmailEditText.setVisibility(View.GONE);
-        mPswEditText.setVisibility(View.GONE);
-        mLangTextView.setVisibility(View.GONE);
-        mForgotPswTextView.setVisibility(View.GONE);
-        mLoginButton.setVisibility(View.GONE);
-        mNewAccountButton.setVisibility(View.GONE);
-        mRolStaticLogoImageView.setVisibility(View.GONE);
+        if(START_ANIMATION) {
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                mRolCoverImageView.setVisibility(View.GONE);
+            mEmailEditText.setVisibility(View.GONE);
+            mPswEditText.setVisibility(View.GONE);
+            mLangTextView.setVisibility(View.GONE);
+            mForgotPswTextView.setVisibility(View.GONE);
+            mLoginButton.setVisibility(View.GONE);
+            mNewAccountButton.setVisibility(View.GONE);
+            mRolStaticLogoImageView.setVisibility(View.GONE);
 
-        Animation moveRolLogoAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.move_rol_logo);
-        moveRolLogoAnimation.setFillAfter(true);
-        moveRolLogoAnimation.setAnimationListener(this);
-        mRolLogoImageView.startAnimation(moveRolLogoAnimation);
+            Animation moveRolLogoAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.move_rol_logo);
+            moveRolLogoAnimation.setFillAfter(true);
+            moveRolLogoAnimation.setAnimationListener(this);
+            mRolLogoImageView.startAnimation(moveRolLogoAnimation);
+        }else{
+            mRolLogoImageView.setVisibility(View.GONE);
+        }
 
         final View activityRootView = findViewById(R.id.mainConstraintLayout);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if(ANIMATION_ENDED) {
+                if(ANIMATION_ENDED || !START_ANIMATION) {
                     int heigthDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
                     if (heigthDiff > dpToPx(MainActivity.this, 200)) {
                         //tela com teclado
-                        mRolCoverImageView.setVisibility(View.GONE);
+                        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                            mRolCoverImageView.setVisibility(View.GONE);
                         mLangTextView.setVisibility(View.GONE);
                         mForgotPswTextView.setVisibility(View.GONE);
                     } else {
                         //sem teclado
-                        mRolCoverImageView.setVisibility(View.VISIBLE);
+                        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+                            mRolCoverImageView.setVisibility(View.VISIBLE);
                         mLangTextView.setVisibility(View.VISIBLE);
                         mForgotPswTextView.setVisibility(View.VISIBLE);
                     }
@@ -110,8 +124,10 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         mNewAccountButton.setAlpha(0f);
         mNewAccountButton.setVisibility(View.VISIBLE);
 
-        mRolCoverImageView.setAlpha(0f);
-        mRolCoverImageView.setVisibility(View.VISIBLE);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mRolCoverImageView.setAlpha(0f);
+            mRolCoverImageView.setVisibility(View.VISIBLE);
+        }
 
         int mediumAnimationTime = getResources().getInteger(android.R.integer.config_mediumAnimTime);
 
@@ -145,10 +161,12 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 .setDuration(mediumAnimationTime)
                 .setListener(null);
 
-        mRolCoverImageView.animate()
-                .alpha(1f)
-                .setDuration(mediumAnimationTime)
-                .setListener(null);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mRolCoverImageView.animate()
+                    .alpha(1f)
+                    .setDuration(mediumAnimationTime)
+                    .setListener(null);
+        }
 
         ANIMATION_ENDED = true;
     }
@@ -161,5 +179,11 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     public static float dpToPx(Context context, float valueInDp){
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, valueInDp, metrics);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("START_ANIMATION",false);
     }
 }
