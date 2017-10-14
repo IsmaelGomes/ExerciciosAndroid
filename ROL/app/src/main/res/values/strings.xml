@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ROL</string>
+
+    <string name="etxt_username">Username ou Email</string>
+    <string name="etxt_password">Senha</string>
+    <string name="txv_language">Portugês Brasil &#8226; English &#8226; More...</string>
+    <string name="txv_forgot_password">Esqueceu a Senha?</string>
+    <string name="btn_login">Log In</string>
+    <string name="btn_new_account">Criar Nova Conta do ROL</string>
+
 </resources>
