@@ -2,143 +2,131 @@ package com.example.ismaelgomes.conceitosbasicos;
 
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.res.Configuration;
 import android.net.Uri;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
+import android.view.KeyEvent;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-    public class Alunos extends AppCompatActivity {
+import layout.alunosEditFragment;
+import layout.alunosFragment;
 
-        AlunoAdapter adapter;
-        List<Aluno> alunos;
-        AlunoDAO dao;
-        Cursor cursor;
+public class Alunos extends AppCompatActivity{
+
+    private FragmentManager fm;
+    private Boolean orientationPortrait = false;
+    private final static String OK = "ok";
+    private final static String CONDITION_BASE = " WHERE";
+    MyPageAdapter pageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alunos);
-        ListView lv = (ListView) findViewById(R.id.alunosList);
+        fm = getSupportFragmentManager();
+        orientationPortrait = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
 
-        Bitmap foto = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-        alunos = getAlunosFromDb();
+        FragmentTransaction ft = fm.beginTransaction();
+        alunosFragment fragment = alunosFragment.newInstance("");
 
-        adapter = new AlunoAdapter(this, alunos);
-        lv.setAdapter(adapter);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent nextActivity = new Intent(Alunos.this, AlunoEdit.class);
-                nextActivity.putExtra("aluno", alunos.get(position));
-                startActivityForResult(nextActivity, 1);
-            }
-        });
-        lv.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            @Override
-            public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
-                contextMenu.add(Menu.NONE, 1, Menu.NONE, "Ligar");
-                contextMenu.add(Menu.NONE, 2, Menu.NONE, "Mandar SMS");
-                contextMenu.add(Menu.NONE, 3, Menu.NONE, "Ver localização");
-                contextMenu.add(Menu.NONE, 4, Menu.NONE, "Acessar site");
-            }
-        });
-
-        Button addButton = (Button) findViewById(R.id.button);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent it = new Intent(Alunos.this, AlunoEdit.class);
-                startActivityForResult(it, 1);
-            }
-        });
-    }
-
-    private ArrayList<Aluno> getAlunosFromDb(){
-        dao = new AlunoDAO(Alunos.this);
-        cursor = dao.getReadableDatabase().rawQuery("SELECT ID, Nome, Telefone, Endereco, Foto, Site, Nota FROM Alunos", null);
-        ArrayList<Aluno> all = new ArrayList<>();
-        if(cursor.moveToFirst()){
-            do{
-                Aluno a = new Aluno();
-                a.setId(cursor.getInt(0));
-                a.setNome(cursor.getString(1));
-                a.setTelefone(cursor.getString(2));
-                a.setEndereco(cursor.getString(3));
-
-                if(cursor.getBlob(4) != null)
-                    a.setSerializableFoto(cursor.getBlob(4));
-
-                a.setSite(cursor.getString(5));
-                a.setNota(cursor.getDouble(6));
-                all.add(a);
-            }while (cursor.moveToNext());
+        if(orientationPortrait == false) {
+            //Inicializando o fragment
+            ft.add(R.id.listFragment_content, fragment);
+            ft.commit();
+        }else{
+            ViewPager vp = (ViewPager)findViewById(R.id.view_pager);
+            List<Fragment> fragments = getFragments();
+            pageAdapter = new MyPageAdapter(fm, fragments);
+            vp.setAdapter(pageAdapter);
         }
-        return all;
+
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo menuInfo =
-                (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        int position = menuInfo.position;
-        switch (item.getItemId()) {
-            case 1:
-                makeCall(position);
-                break;
-            case 2:
-                sendSMS(position);
-                break;
-            case 3:
-                showLocation(position);
-                break;
-            case 4:
-                showWebSite(position);
-                break;
+    public void onNotifyList(Aluno aluno){
+
+        FragmentTransaction ft = fm.beginTransaction();
+        alunosEditFragment fragment = alunosEditFragment.newInstance(aluno);
+
+        if(orientationPortrait == false){
+            //remover antes
+            try{
+                ft.remove(getSupportFragmentManager().findFragmentById(R.id.editFragment_content));
+                ft.commit();
+            }catch(Exception e){
+
+            }
+            finally {
+                //adicionar outro fragment
+                ft = fm.beginTransaction();
+                ft.add(R.id.editFragment_content, fragment);
+                ft.addToBackStack(null);
+                ft.commit();
+            }
         }
-        return super.onContextItemSelected(item);
     }
 
-    private void makeCall(int position) {
-        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", alunos.get(position).getTelefone(), null));
-        startActivity(intent);
-    }
-    private void sendSMS(int position){
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", alunos.get(position).getTelefone(), null)));
-    }
-    private void showLocation(int position){
+    public void onNotifyEdit(String message){
+        if(message.equals(OK)){
 
-        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + alunos.get(position).getEndereco());
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        mapIntent.setPackage("com.google.android.apps.maps");
-        startActivity(mapIntent);
-    }
-    private void showWebSite(int position){
-        String url = "http://"+alunos.get(position).getSite();
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setData(Uri.parse(url));
-        startActivity(i);
+            FragmentTransaction ft = fm.beginTransaction();
+
+            if(orientationPortrait == false){
+                ft.replace(R.id.listFragment_content, new alunosFragment().newInstance(""));
+                ft.commit();
+            }
+
+            Toast.makeText(this, "Aluno salvo com sucesso", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+    }
 
-        if (resultCode == RESULT_OK){
-            alunos.clear();
-            alunos.addAll(getAlunosFromDb());
-            adapter.notifyDataSetChanged();
+    private List<Fragment> getFragments(){
+        List<Fragment> fgs = new ArrayList<Fragment>();
+        fgs.add(alunosFragment.newInstance(""));
+        fgs.add(alunosFragment.newInstance(CONDITION_BASE + " Telefone IS NOT NULL"));
+        fgs.add(alunosFragment.newInstance(CONDITION_BASE + " Nota < 7"));
+
+        return fgs;
+    }
+
+    class MyPageAdapter extends FragmentPagerAdapter{
+        private List<Fragment> fragments;
+
+        public MyPageAdapter(FragmentManager fm, List<Fragment> fragments) {
+            super(fm);
+            this.fragments = fragments;
+        }
+        @Override
+        public Fragment getItem(int position) {
+            return this.fragments.get(position);
+        }
+        @Override
+        public int getCount() {
+            return this.fragments.size();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            String title = "";
+            switch (position){
+                case 0: title = "Todos"; break;
+                case 1: title = "Com Telefone"; break;
+                case 2: title = "Nota < 7"; break;
+            }
+            return title;
         }
     }
 }

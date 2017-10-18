@@ -19,7 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Alunos" />
-        <activity android:name=".AlunoEdit"></activity>
+        <activity android:name="com.example.ismaelgomes.conceitosbasicos.Alunos" />
+        <activity android:name="com.example.ismaelgomes.conceitosbasicos.AlunoEdit"></activity>
     </application>
 </manifest>
