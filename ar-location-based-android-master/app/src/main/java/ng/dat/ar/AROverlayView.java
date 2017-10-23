@@ -34,8 +34,8 @@ public class AROverlayView extends View {
 
         //Demo points
         arPoints = new ArrayList<ARPoint>() {{
-            add(new ARPoint("Mercearia Anchieta", -8.028628, -34.886007, 0));
-            add(new ARPoint("Bar do zé", -8.025577, -34.882897, 0));
+            add(new ARPoint("Local aleatório 1", -8.028628, -34.886007, 0));
+            add(new ARPoint("Local aleatório 2", -8.025577, -34.882897, 0));
         }};
     }
 
